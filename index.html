@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS — Generative Design Studio</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d9ff;
+            --secondary: #ff006e;
+            --tertiary: #00ff88;
+            --accent: #ff00ff;
+            --bg: #0a0e27;
+            --bg-light: #1a1f3a;
+            --text: #e0e0ff;
+            --text-muted: #8899bb;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            cursor: crosshair;
+        }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 217, 255, 0.02),
+                rgba(0, 217, 255, 0.02) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: -1;
+            animation: scanlines 8s linear infinite;
+        }
+
+        @keyframes scanlines {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 14, 39, 0.95);
+            backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.3);
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 3px;
+            color: var(--primary);
+            text-transform: uppercase;
+            animation: logoGlow 2s ease-in-out infinite;
+            cursor: pointer;
+        }
+
+        @keyframes logoGlow {
+            0%, 100% { text-shadow: 0 0 10px rgba(0, 217, 255, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(0, 217, 255, 0.8); }
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        nav a::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+
+        nav a:hover::before {
+            width: 100%;
+        }
+
+        .color-switcher {
+            display: flex;
+            gap: 0.6rem;
+        }
+
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .color-dot:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        main {
+            margin-top: 80px;
+        }
+
+        section {
+            min-height: 100vh;
+            padding: 5rem 3rem;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 217, 255, 0.1);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            letter-spacing: -2px;
+            color: var(--text);
+        }
+
+        h1 .accent {
+            color: var(--primary);
+            text-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        h2 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            letter-spacing: -1px;
+            color: var(--text);
+        }
+
+        h2 .accent {
+            color: var(--primary);
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        /* Canvas Container */
+        .canvas-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid rgba(0, 217, 255, 0.3);
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 2px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 217, 255, 0.1);
+        }
+
+        .canvas-container canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Hero Section */
+        #hero {
+            background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(255, 0, 110, 0.04));
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content {
+            z-index: 2;
+        }
+
+        .hero-content h1 {
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            border: 2px solid var(--primary);
+            background: transparent;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            z-index: -1;
+            transition: left 0.4s ease;
+        }
+
+        .cta-button:hover {
+            color: var(--bg);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.5);
+        }
+
+        .cta-button:hover::before {
+            left: 0;
+        }
+
+        /* Portfolio Grid */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .portfolio-item {
+            background: rgba(0, 217, 255, 0.05);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            transition: all 0.5s ease;
+            cursor: pointer;
+        }
+
+        .portfolio-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 40px rgba(0, 217, 255, 0.25), inset 0 0 20px rgba(0, 217, 255, 0.05);
+            transform: translateY(-8px);
+        }
+
+        .portfolio-preview {
+            width: 100%;
+            height: 280px;
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 1px solid rgba(0, 217, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .portfolio-preview::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 217, 255, 0.01),
+                rgba(0, 217, 255, 0.01) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .portfolio-preview canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .portfolio-info {
+            padding: 2rem;
+            background: rgba(0, 217, 255, 0.02);
+        }
+
+        .portfolio-info h3 {
+            margin-bottom: 0.8rem;
+        }
+
+        .portfolio-info p {
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .service-card {
+            background: rgba(0, 217, 255, 0.03);
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 2.5rem;
+            border-radius: 2px;
+            transition: all 0.4s ease;
+        }
+
+        .service-card:hover {
+            background: rgba(0, 217, 255, 0.08);
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 217, 255, 0.15);
+            transform: translateY(-5px);
+        }
+
+        .service-card h3 {
+            margin-bottom: 1rem;
+        }
+
+        /* Contact Section */
+        .contact-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .contact-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .contact-item h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-item p {
+            margin: 0;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 1px solid rgba(0, 217, 255, 0.2);
+            padding: 3rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+            nav ul { gap: 1.5rem; }
+            #hero { grid-template-columns: 1fr; }
+            .portfolio-grid { grid-template-columns: 1fr; }
+            .contact-content { grid-template-columns: 1fr; }
+            section { padding: 3rem 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo" onclick="scrollToTop()">NEXUS</div>
+        <ul>
+            <li><a href="#hero">Studio</a></li>
+            <li><a href="#work">Work</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#graph">Intelligence</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li>
+                <div class="color-switcher">
+                    <div class="color-dot" style="background: #00d9ff;" onclick="changeTheme('cyan')"></div>
+                    <div class="color-dot" style="background: #ff006e;" onclick="changeTheme('pink')"></div>
+                    <div class="color-dot" style="background: #00ff88;" onclick="changeTheme('lime')"></div>
+                    <div class="color-dot" style="background: #ff00ff;" onclick="changeTheme('magenta')"></div>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero">
+            <div class="hero-content">
+                <h1>Generative <span class="accent">Design</span> Studio</h1>
+                <p>We architect immersive digital experiences through algorithmic thinking, generative systems, and computational aesthetics. Each project is a dialogue between human creativity and machine intelligence.</p>
+                <p style="font-size: 0.95rem; color: var(--text-muted);">Est. 2010 | Based in Digital Realm</p>
+                <button class="cta-button" onclick="document.getElementById('work').scrollIntoView({behavior:'smooth'})">Explore Work</button>
+            </div>
+            <div class="canvas-container">
+                <canvas id="heroCanvas"></canvas>
+            </div>
+        </section>
+
+        <!-- Work Section -->
+        <section id="work">
+            <div class="container">
+                <h2>Algorithmic <span class="accent">Expressions</span></h2>
+                <p style="margin-bottom: 3rem;">Generative art systems exploring the boundaries between mathematics and aesthetics.</p>
+                <div class="portfolio-grid">
+                    <div class="portfolio-item">
+                        <div class="portfolio-preview">
+                            <canvas id="fluidDynamics"></canvas>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Fluid Dynamics</h3>
+                            <p>Organic flow fields simulating liquid behavior.</p>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item">
+                        <div class="portfolio-preview">
+                            <canvas id="fractalMandala"></canvas>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Fractal Mandalas</h3>
+                            <p>Recursive geometric patterns.</p>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item">
+                        <div class="portfolio-preview">
+                            <canvas id="voronoiPattern"></canvas>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Voronoi Evolution</h3>
+                            <p>Spatial tessellation patterns.</p>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item">
+                        <div class="portfolio-preview">
+                            <canvas id="waveInterference"></canvas>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Wave Interference</h3>
+                            <p>Superimposed oscillations.</p>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item">
+                        <div class="portfolio-preview">
+                            <canvas id="perlinLandscape"></canvas>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Perlin Landscape</h3>
+                            <p>Procedural terrain generation.</p>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-item">
+                        <div class="portfolio-preview">
+                            <canvas id="particleSwarm"></canvas>
+                        </div>
+                        <div class="portfolio-info">
+                            <h3>Particle Swarms</h3>
+                            <p>Autonomous agent systems.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about">
+            <div class="container">
+                <h2>About <span class="accent">NEXUS</span></h2>
+                <p>Founded in 2010, NEXUS is a generative design studio dedicated to exploring the intersection of art, technology, and computation. We specialize in creating algorithmic systems that transcend traditional design paradigms.</p>
+                <p>Our practice is rooted in the belief that meaningful creative work emerges from the collaboration between intentional design and computational autonomy. We create systems that surprise their creators.</p>
+                <div class="canvas-container" style="margin-top: 3rem;">
+                    <canvas id="aboutCanvas"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Knowledge Graph Section -->
+        <section id="graph" style="background: linear-gradient(135deg, rgba(0, 217, 255, 0.08), rgba(255, 0, 110, 0.04));">
+            <div class="container">
+                <h2>Intelligence <span class="accent">Mapping</span></h2>
+                <p style="margin-bottom: 2rem;">Real-time knowledge graph visualization. Our algorithmic systems map complex information networks.</p>
+                <div class="canvas-container" style="height: 700px;">
+                    <iframe src="http://72.62.213.62:17790/preview/knowledge-graph/latest.html" style="width: 100%; height: 100%; border: none; border-radius: 2px;"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services">
+            <div class="container">
+                <h2>Services & <span class="accent">Expertise</span></h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <h3>Generative Art</h3>
+                        <p>Custom algorithmic systems producing infinite unique variations.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Creative Coding</h3>
+                        <p>Advanced implementations using Canvas, Three.js, and GLSL.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Interactive Experiences</h3>
+                        <p>Web-based interactive systems combining aesthetics with engagement.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Data Visualization</h3>
+                        <p>Transform complex datasets into compelling visual narratives.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Installation Art</h3>
+                        <p>Large-scale generative installations with projection mapping.</p>
+                    </div>
+                    <div class="service-card">
+                        <h3>Technical Consulting</h3>
+                        <p>Strategic guidance on integrating generative systems.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact">
+            <div class="container">
+                <h2>Let's <span class="accent">Collaborate</span></h2>
+                <div class="contact-content">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <h3>Email</h3>
+                            <p>hello@nexus.studio</p>
+                        </div>
+                        <div class="contact-item">
+                            <h3>Location</h3>
+                            <p>Digital Realm / Everywhere</p>
+                        </div>
+                        <div class="contact-item">
+                            <h3>Opportunities</h3>
+                            <p>We're always interested in collaborations exploring generative design.</p>
+                        </div>
+                    </div>
+                    <div class="canvas-container">
+                        <canvas id="contactCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>NEXUS GENERATIVE DESIGN STUDIO © 2026 | WHERE ALGORITHMS BECOME ART</p>
+    </footer>
+
+    <script>
+        // ============= THEME SYSTEM =============
+        const themes = {
+            cyan: { primary: '#00d9ff', secondary: '#ff006e', tertiary: '#00ff88', accent: '#ff00ff' },
+            pink: { primary: '#ff006e', secondary: '#00d9ff', tertiary: '#ff00ff', accent: '#00ff88' },
+            lime: { primary: '#00ff88', secondary: '#00d9ff', tertiary: '#ff006e', accent: '#ff00ff' },
+            magenta: { primary: '#ff00ff', secondary: '#00ff88', tertiary: '#00d9ff', accent: '#ff006e' }
+        };
+
+        function changeTheme(theme) {
+            const t = themes[theme];
+            document.documentElement.style.setProperty('--primary', t.primary);
+            document.documentElement.style.setProperty('--secondary', t.secondary);
+            document.documentElement.style.setProperty('--tertiary', t.tertiary);
+            document.documentElement.style.setProperty('--accent', t.accent);
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ============= COLOR PALETTES =============
+        const colors = {
+            cyan: '#00d9ff',
+            magenta: '#ff00ff',
+            lime: '#00ff88',
+            pink: '#ff006e',
+            orange: '#ff6b00',
+            purple: '#8e44ad',
+            teal: '#1abc9c',
+            gold: '#f39c12'
+        };
+
+        // ============= HERO CANVAS =============
+        const heroCanvas = document.getElementById('heroCanvas');
+        const heroCtx = heroCanvas.getContext('2d');
+        heroCanvas.width = heroCanvas.offsetWidth;
+        heroCanvas.height = heroCanvas.offsetHeight;
+
+        let heroTime = 0;
+        function drawHero() {
+            heroCtx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+            heroCtx.fillRect(0, 0, heroCanvas.width, heroCanvas.height);
+
+            const gridSize = 50;
+            for (let i = 0; i < heroCanvas.width; i += gridSize) {
+                for (let j = 0; j < heroCanvas.height; j += gridSize) {
+                    const distFromCenter = Math.sqrt(Math.pow(i - heroCanvas.width / 2, 2) + Math.pow(j - heroCanvas.height / 2, 2));
+                    const wave = Math.sin(distFromCenter * 0.008 - heroTime * 0.04) * 25;
+                    const angle = Math.atan2(j - heroCanvas.height / 2, i - heroCanvas.width / 2);
+                    
+                    const colorIndex = Math.floor((heroTime * 0.1 + angle) / Math.PI) % 3;
+                    const colorKey = ['orange', 'purple', 'teal'][colorIndex];
+                    heroCtx.strokeStyle = colors[colorKey];
+                    heroCtx.globalAlpha = 0.4 + Math.sin(heroTime * 0.01 + i * 0.01) * 0.3;
+                    heroCtx.strokeRect(i + wave * 0.5, j + wave * 0.5, gridSize - 10, gridSize - 10);
+                }
+            }
+
+            heroCtx.globalAlpha = 1;
+            heroTime++;
+            requestAnimationFrame(drawHero);
+        }
+        drawHero();
+
+        // ============= FLUID DYNAMICS =============
+        const fluidCanvas = document.getElementById('fluidDynamics');
+        const fluidCtx = fluidCanvas.getContext('2d');
+        fluidCanvas.width = fluidCanvas.offsetWidth;
+        fluidCanvas.height = 280;
+
+        let fluidTime = 0;
+        function drawFluid() {
+            fluidCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            fluidCtx.fillRect(0, 0, fluidCanvas.width, fluidCanvas.height);
+
+            for (let x = 0; x < fluidCanvas.width; x += 5) {
+                for (let y = 0; y < fluidCanvas.height; y += 5) {
+                    const angle = Math.atan2(y - fluidCanvas.height / 2, x - fluidCanvas.width / 2);
+                    const magnitude = Math.sqrt(Math.pow(x - fluidCanvas.width / 2, 2) + Math.pow(y - fluidCanvas.height / 2, 2));
+                    
+                    const vx = Math.cos(angle + fluidTime * 0.01) * (1 + Math.sin(magnitude * 0.01 + fluidTime * 0.02));
+                    const vy = Math.sin(angle + fluidTime * 0.01) * (1 + Math.cos(magnitude * 0.01 + fluidTime * 0.02));
+                    
+                    const colorKey = Math.random() > 0.5 ? 'gold' : 'orange';
+                    fluidCtx.fillStyle = colors[colorKey];
+                    fluidCtx.globalAlpha = 0.6;
+                    
+                    fluidCtx.beginPath();
+                    fluidCtx.arc(x + vx * 3, y + vy * 3, 2, 0, Math.PI * 2);
+                    fluidCtx.fill();
+                }
+            }
+
+            fluidCtx.globalAlpha = 1;
+            fluidTime++;
+            requestAnimationFrame(drawFluid);
+        }
+        drawFluid();
+
+        // ============= FRACTAL MANDALA =============
+        const fractalCanvas = document.getElementById('fractalMandala');
+        const fractalCtx = fractalCanvas.getContext('2d');
+        fractalCanvas.width = fractalCanvas.offsetWidth;
+        fractalCanvas.height = 280;
+
+        let fractalTime = 0;
+        function drawFractal() {
+            fractalCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            fractalCtx.fillRect(0, 0, fractalCanvas.width, fractalCanvas.height);
+
+            const centerX = fractalCanvas.width / 2;
+            const centerY = fractalCanvas.height / 2;
+            const layers = 8;
+            const colorKeys = ['purple', 'magenta', 'pink'];
+
+            for (let layer = 0; layer < layers; layer++) {
+                const radius = (layer + 1) * 15;
+                const points = (layer + 1) * 6;
+                
+                for (let i = 0; i < points; i++) {
+                    const angle = (i / points) * Math.PI * 2 + fractalTime * (0.01 - layer * 0.002);
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+                    
+                    fractalCtx.fillStyle = colors[colorKeys[layer % colorKeys.length]];
+                    fractalCtx.globalAlpha = 0.5 + Math.sin(fractalTime * 0.05 + layer * 0.2) * 0.3;
+                    
+                    fractalCtx.beginPath();
+                    fractalCtx.arc(x, y, 3 + layer * 0.5, 0, Math.PI * 2);
+                    fractalCtx.fill();
+                }
+            }
+
+            fractalCtx.globalAlpha = 1;
+            fractalTime++;
+            requestAnimationFrame(drawFractal);
+        }
+        drawFractal();
+
+        // ============= VORONOI PATTERN =============
+        const voronoiCanvas = document.getElementById('voronoiPattern');
+        const voronoiCtx = voronoiCanvas.getContext('2d');
+        voronoiCanvas.width = voronoiCanvas.offsetWidth;
+        voronoiCanvas.height = 280;
+
+        let voronoiTime = 0;
+        let voronoiSites = [];
+        
+        for (let i = 0; i < 15; i++) {
+            voronoiSites.push({
+                x: Math.random() * voronoiCanvas.width,
+                y: Math.random() * voronoiCanvas.height,
+                vx: (Math.random() - 0.5) * 1,
+                vy: (Math.random() - 0.5) * 1
+            });
+        }
+
+        function drawVoronoi() {
+            voronoiCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            voronoiCtx.fillRect(0, 0, voronoiCanvas.width, voronoiCanvas.height);
+
+            voronoiSites.forEach(site => {
+                site.x += site.vx;
+                site.y += site.vy;
+                
+                if (site.x < 0 || site.x > voronoiCanvas.width) site.vx *= -1;
+                if (site.y < 0 || site.y > voronoiCanvas.height) site.vy *= -1;
+            });
+
+            const colorKeys = ['teal', 'lime', 'cyan'];
+
+            for (let x = 0; x < voronoiCanvas.width; x += 4) {
+                for (let y = 0; y < voronoiCanvas.height; y += 4) {
+                    let minDist = Infinity;
+                    let siteIndex = 0;
+                    
+                    voronoiSites.forEach((site, i) => {
+                        const dist = Math.sqrt(Math.pow(x - site.x, 2) + Math.pow(y - site.y, 2));
+                        if (dist < minDist) {
+                            minDist = dist;
+                            siteIndex = i;
+                        }
+                    });
+                    
+                    voronoiCtx.fillStyle = colors[colorKeys[siteIndex % colorKeys.length]];
+                    voronoiCtx.globalAlpha = 0.7 - minDist * 0.01;
+                    
+                    voronoiCtx.fillRect(x, y, 4, 4);
+                }
+            }
+
+            voronoiCtx.globalAlpha = 1;
+            voronoiTime++;
+            requestAnimationFrame(drawVoronoi);
+        }
+        drawVoronoi();
+
+        // ============= WAVE INTERFERENCE =============
+        const waveCanvas = document.getElementById('waveInterference');
+        const waveCtx = waveCanvas.getContext('2d');
+        waveCanvas.width = waveCanvas.offsetWidth;
+        waveCanvas.height = 280;
+
+        let waveTime = 0;
+        function drawWave() {
+            waveCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            waveCtx.fillRect(0, 0, waveCanvas.width, waveCanvas.height);
+
+            for (let x = 0; x < waveCanvas.width; x += 2) {
+                for (let y = 0; y < waveCanvas.height; y += 2) {
+                    const wave1 = Math.sin((x + waveTime * 2) * 0.02) * Math.cos((y + waveTime) * 0.02);
+                    const wave2 = Math.sin((x - waveTime * 1.5) * 0.015) * Math.sin((y - waveTime * 0.5) * 0.015);
+                    const interference = wave1 + wave2;
+                    
+                    const hue = ((interference * 180 + waveTime * 2) % 360);
+                    waveCtx.fillStyle = `hsl(${hue}, 100%, ${50 + interference * 30}%)`;
+                    waveCtx.globalAlpha = Math.abs(interference);
+                    
+                    waveCtx.fillRect(x, y, 2, 2);
+                }
+            }
+
+            waveCtx.globalAlpha = 1;
+            waveTime++;
+            requestAnimationFrame(drawWave);
+        }
+        drawWave();
+
+        // ============= PERLIN LANDSCAPE =============
+        const noiseCanvas = document.getElementById('perlinLandscape');
+        const noiseCtx = noiseCanvas.getContext('2d');
+        noiseCanvas.width = noiseCanvas.offsetWidth;
+        noiseCanvas.height = 280;
+
+        let noiseTime = 0;
+        function noise(x, y) {
+            return Math.sin(x * 0.1) * Math.cos(y * 0.1) * Math.sin((x + y) * 0.05);
+        }
+
+        function drawNoise() {
+            noiseCtx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            noiseCtx.fillRect(0, 0, noiseCanvas.width, noiseCanvas.height);
+
+            const colorKeys = ['purple', 'magenta', 'pink'];
+
+            for (let x = 0; x < noiseCanvas.width; x += 3) {
+                for (let y = 0; y < noiseCanvas.height; y += 3) {
+                    const n = noise(x + noiseTime, y + noiseTime * 0.5);
+                    const height = (n + 1) * 50;
+                    
+                    noiseCtx.fillStyle = colors[colorKeys[Math.floor(height / 30) % colorKeys.length]];
+                    noiseCtx.globalAlpha = 0.6 + n * 0.3;
+                    
+                    noiseCtx.fillRect(x, y, 3, 3);
+                }
+            }
+
+            noiseCtx.globalAlpha = 1;
+            noiseTime++;
+            requestAnimationFrame(drawNoise);
+        }
+        drawNoise();
+
+        // ============= PARTICLE SWARM =============
+        const swarmCanvas = document.getElementById('particleSwarm');
+        const swarmCtx = swarmCanvas.getContext('2d');
+        swarmCanvas.width = swarmCanvas.offsetWidth;
+        swarmCanvas.height = 280;
+
+        let swarmParticles = [];
+        for (let i = 0; i < 100; i++) {
+            swarmParticles.push({
+                x: Math.random() * swarmCanvas.width,
+                y: Math.random() * swarmCanvas.height,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2
+            });
+        }
+
+        let swarmTime = 0;
+        function drawSwarm() {
+            swarmCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            swarmCtx.fillRect(0, 0, swarmCanvas.width, swarmCanvas.height);
+
+            swarmParticles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0 || p.x > swarmCanvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > swarmCanvas.height) p.vy *= -1;
+
+                swarmCtx.fillStyle = colors.teal;
+                swarmCtx.globalAlpha = 0.7;
+                swarmCtx.beginPath();
+                swarmCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                swarmCtx.fill();
+            });
+
+            swarmCtx.globalAlpha = 0.2;
+            swarmCtx.strokeStyle = colors.cyan;
+            swarmCtx.lineWidth = 0.5;
+            for (let i = 0; i < swarmParticles.length; i++) {
+                for (let j = i + 1; j < swarmParticles.length; j++) {
+                    const dx = swarmParticles[i].x - swarmParticles[j].x;
+                    const dy = swarmParticles[i].y - swarmParticles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 100) {
+                        swarmCtx.beginPath();
+                        swarmCtx.moveTo(swarmParticles[i].x, swarmParticles[i].y);
+                        swarmCtx.lineTo(swarmParticles[j].x, swarmParticles[j].y);
+                        swarmCtx.stroke();
+                    }
+                }
+            }
+
+            swarmCtx.globalAlpha = 1;
+            swarmTime++;
+            requestAnimationFrame(drawSwarm);
+        }
+        drawSwarm();
+
+        // ============= ABOUT CANVAS =============
+        const aboutCanvas = document.getElementById('aboutCanvas');
+        const aboutCtx = aboutCanvas.getContext('2d');
+        aboutCanvas.width = aboutCanvas.offsetWidth;
+        aboutCanvas.height = aboutCanvas.offsetHeight;
+
+        let aboutTime = 0;
+        function drawAbout() {
+            aboutCtx.fillStyle = 'rgba(0, 0, 0, 0.06)';
+            aboutCtx.fillRect(0, 0, aboutCanvas.width, aboutCanvas.height);
+
+            const centerX = aboutCanvas.width / 2;
+            const centerY = aboutCanvas.height / 2;
+            const colorKeys = ['gold', 'orange', 'purple'];
+
+            for (let orbit = 1; orbit <= 6; orbit++) {
+                const radius = orbit * 50;
+                const particleCount = orbit * 8;
+                
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (i / particleCount) * Math.PI * 2 + aboutTime * (0.008 - orbit * 0.0005);
+                    const x = centerX + Math.cos(angle) * radius;
+                    const y = centerY + Math.sin(angle) * radius;
+
+                    const size = 2 + Math.sin(aboutTime * 0.05) * 1.5;
+                    aboutCtx.fillStyle = colors[colorKeys[orbit % colorKeys.length]];
+                    aboutCtx.beginPath();
+                    aboutCtx.arc(x, y, size, 0, Math.PI * 2);
+                    aboutCtx.fill();
+                }
+
+                aboutCtx.strokeStyle = `rgba(255, 107, 0, ${0.15 + Math.sin(aboutTime * 0.01 + orbit) * 0.1})`;
+                aboutCtx.lineWidth = 1;
+                aboutCtx.beginPath();
+                aboutCtx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                aboutCtx.stroke();
+            }
+
+            aboutTime++;
+            requestAnimationFrame(drawAbout);
+        }
+        drawAbout();
+
+        // ============= CONTACT CANVAS =============
+        const contactCanvas = document.getElementById('contactCanvas');
+        const contactCtx = contactCanvas.getContext('2d');
+        contactCanvas.width = contactCanvas.offsetWidth;
+        contactCanvas.height = contactCanvas.offsetHeight;
+
+        let contactTime = 0;
+        let contactParticles = [];
+
+        for (let i = 0; i < 80; i++) {
+            contactParticles.push({
+                x: Math.random() * contactCanvas.width,
+                y: Math.random() * contactCanvas.height,
+                vx: (Math.random() - 0.5) * 2.5,
+                vy: (Math.random() - 0.5) * 2.5,
+                life: Math.random(),
+                size: Math.random() * 3 + 1
+            });
+        }
+
+        function drawContact() {
+            contactCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            contactCtx.fillRect(0, 0, contactCanvas.width, contactCanvas.height);
+
+            contactParticles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life += 0.008;
+
+                if (p.x < 0 || p.x > contactCanvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > contactCanvas.height) p.vy *= -1;
+
+                const wave = Math.sin(p.life * 2.5) * 40;
+                contactCtx.globalAlpha = Math.abs(Math.sin(p.life * Math.PI)) * 0.8;
+                contactCtx.fillStyle = colors.teal;
+                contactCtx.beginPath();
+                contactCtx.arc(p.x + wave * 0.3, p.y, p.size, 0, Math.PI * 2);
+                contactCtx.fill();
+            });
+
+            contactCtx.globalAlpha = 0.15;
+            contactCtx.strokeStyle = colors.cyan;
+            contactCtx.lineWidth = 0.5;
+            for (let i = 0; i < contactParticles.length; i++) {
+                for (let j = i + 1; j < contactParticles.length; j++) {
+                    const dx = contactParticles[i].x - contactParticles[j].x;
+                    const dy = contactParticles[i].y - contactParticles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 120) {
+                        contactCtx.beginPath();
+                        contactCtx.moveTo(contactParticles[i].x, contactParticles[i].y);
+                        contactCtx.lineTo(contactParticles[j].x, contactParticles[j].y);
+                        contactCtx.stroke();
+                    }
+                }
+            }
+
+            contactCtx.globalAlpha = 1;
+            contactTime++;
+            requestAnimationFrame(drawContact);
+        }
+        drawContact();
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
