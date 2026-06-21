@@ -1,8 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { Script } from 'node:vm';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const inlineScript = html.match(/<script>([\s\S]*)<\/script>/)?.[1];
 
 function countMatches(pattern) {
   return [...html.matchAll(pattern)].length;
@@ -24,6 +26,11 @@ test('knowledge graph feature has canvas, controls, and script data', () => {
   assert.match(html, /const graphNodes = \[/);
   assert.match(html, /function updateGraphPanel/);
   assert.match(html, /function drawGraph/);
+});
+
+test('inline browser script compiles', () => {
+  assert.ok(inlineScript, 'expected inline script block');
+  assert.doesNotThrow(() => new Script(inlineScript));
 });
 
 test('portfolio detail cards are keyboard accessible and backed by modal data', () => {
