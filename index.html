@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NEXUS is a generative design studio crafting algorithmic visuals, interactive installations, and data-driven experiences.">
     <title>NEXUS — Generative Design Studio</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -21,6 +22,9 @@
             --bg-light: #1a1f3a;
             --text: #e0e0ff;
             --text-muted: #8899bb;
+            --glass: rgba(0, 217, 255, 0.05);
+            --border: rgba(0, 217, 255, 0.22);
+            --shadow: rgba(0, 217, 255, 0.24);
         }
 
         html {
@@ -74,6 +78,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 2rem;
             z-index: 1000;
         }
 
@@ -87,12 +92,51 @@
             cursor: pointer;
         }
 
+        .menu-toggle {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.35);
+            color: var(--primary);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .menu-toggle span,
+        .menu-toggle::before,
+        .menu-toggle::after {
+            content: '';
+            position: absolute;
+            left: 11px;
+            right: 11px;
+            height: 2px;
+            background: currentColor;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .menu-toggle::before { top: 13px; }
+        .menu-toggle span { top: 21px; }
+        .menu-toggle::after { top: 29px; }
+
+        nav.menu-open .menu-toggle::before {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        nav.menu-open .menu-toggle span {
+            opacity: 0;
+        }
+
+        nav.menu-open .menu-toggle::after {
+            transform: translateY(-8px) rotate(-45deg);
+        }
+
         @keyframes logoGlow {
             0%, 100% { text-shadow: 0 0 10px rgba(0, 217, 255, 0.5); }
             50% { text-shadow: 0 0 20px rgba(0, 217, 255, 0.8); }
         }
 
-        nav ul {
+        .nav-menu {
             display: flex;
             list-style: none;
             gap: 2rem;
@@ -141,11 +185,15 @@
             border: 2px solid rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
+            padding: 0;
+            background: currentColor;
         }
 
-        .color-dot:hover {
+        .color-dot:hover,
+        .color-dot.active {
             border-color: var(--primary);
             box-shadow: 0 0 10px currentColor;
+            transform: scale(1.25);
         }
 
         main {
@@ -246,6 +294,13 @@
             margin-bottom: 2rem;
         }
 
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
         .cta-button {
             display: inline-block;
             padding: 1rem 2.5rem;
@@ -284,6 +339,50 @@
             left: 0;
         }
 
+        .signal-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+
+        .signal-pill {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .signal-pill::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, var(--shadow), transparent 55%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .signal-pill:hover::before {
+            opacity: 1;
+        }
+
+        .signal-pill strong {
+            display: block;
+            color: var(--primary);
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.4rem;
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+
+        .signal-pill span {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
         /* Portfolio Grid */
         .portfolio-grid {
             display: grid;
@@ -299,6 +398,26 @@
             overflow: hidden;
             transition: all 0.5s ease;
             cursor: pointer;
+            position: relative;
+        }
+
+        .spotlight-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(
+                420px circle at var(--mouse-x, 50%) var(--mouse-y, 0%),
+                rgba(255, 255, 255, 0.14),
+                transparent 42%
+            );
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .spotlight-card:hover::after,
+        .spotlight-card:focus-within::after {
+            opacity: 1;
         }
 
         .portfolio-item:hover {
@@ -354,6 +473,158 @@
             margin: 0;
         }
 
+        .portfolio-tags,
+        .modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-top: 1.1rem;
+        }
+
+        .portfolio-tags span,
+        .modal-tags span,
+        .graph-chip {
+            color: var(--primary);
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.28);
+            padding: 0.35rem 0.65rem;
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .card-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.25rem;
+            color: var(--tertiary);
+            font-size: 0.78rem;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+        }
+
+        /* Knowledge Graph */
+        #graph {
+            background:
+                radial-gradient(circle at 20% 20%, rgba(255, 0, 110, 0.1), transparent 30%),
+                radial-gradient(circle at 80% 30%, rgba(0, 255, 136, 0.08), transparent 35%),
+                linear-gradient(135deg, rgba(0, 217, 255, 0.04), rgba(255, 0, 255, 0.04));
+        }
+
+        .section-kicker {
+            color: var(--primary);
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .graph-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .graph-stage {
+            position: relative;
+            min-height: 560px;
+        }
+
+        .graph-stage .canvas-container {
+            height: 560px;
+        }
+
+        .graph-hud {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            z-index: 2;
+        }
+
+        .graph-chip {
+            backdrop-filter: blur(14px);
+        }
+
+        .graph-panel,
+        .brief-form,
+        .modal-card {
+            background: rgba(0, 0, 0, 0.52);
+            border: 1px solid var(--border);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.28), inset 0 0 30px rgba(0, 217, 255, 0.04);
+            backdrop-filter: blur(22px);
+        }
+
+        .graph-panel {
+            padding: 2rem;
+            align-self: stretch;
+        }
+
+        .node-eyebrow {
+            color: var(--tertiary);
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .graph-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .metric {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .metric strong {
+            display: block;
+            color: var(--primary);
+            font-size: 1.35rem;
+            line-height: 1;
+        }
+
+        .metric span {
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .graph-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .ghost-button {
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--primary);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.75rem;
+            letter-spacing: 1.4px;
+            padding: 0.8rem 1rem;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .ghost-button:hover,
+        .ghost-button.active {
+            background: var(--primary);
+            color: var(--bg);
+            box-shadow: 0 0 18px var(--shadow);
+        }
+
         /* Services Grid */
         .services-grid {
             display: grid;
@@ -402,6 +673,100 @@
             margin: 0;
         }
 
+        .brief-form {
+            padding: 2rem;
+        }
+
+        .brief-form label {
+            display: block;
+            color: var(--text);
+            font-size: 0.78rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .brief-form input,
+        .brief-form select,
+        .brief-form textarea {
+            width: 100%;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0, 217, 255, 0.2);
+            background: rgba(0, 0, 0, 0.35);
+            color: var(--text);
+            font-family: inherit;
+            padding: 0.9rem 1rem;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .brief-form input:focus,
+        .brief-form select:focus,
+        .brief-form textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.08);
+        }
+
+        .brief-form textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .brief-output {
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            background: rgba(0, 255, 136, 0.05);
+            color: var(--tertiary);
+            margin: 0.5rem 0 1rem;
+            padding: 1rem;
+            font-size: 0.85rem;
+        }
+
+        .brief-output strong {
+            color: var(--text);
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(2, 4, 16, 0.78);
+            padding: 2rem;
+            z-index: 2000;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-card {
+            max-width: 760px;
+            width: 100%;
+            padding: 2.25rem;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.45);
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 1.4rem;
+        }
+
+        .modal-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
         /* Footer */
         footer {
             background: rgba(0, 0, 0, 0.95);
@@ -417,18 +782,61 @@
         @media (max-width: 768px) {
             h1 { font-size: 2.5rem; }
             h2 { font-size: 2rem; }
-            nav ul { gap: 1.5rem; }
+            nav { padding: 1rem 1.25rem; }
+            .menu-toggle { display: block; }
+            .nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                display: none;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+                padding: 1.25rem;
+                background: rgba(10, 14, 39, 0.98);
+                border-bottom: 1px solid var(--border);
+            }
+            nav.menu-open .nav-menu { display: flex; }
             #hero { grid-template-columns: 1fr; }
+            .hero-actions,
+            .signal-strip,
+            .graph-metrics,
+            .modal-stat-grid {
+                grid-template-columns: 1fr;
+            }
             .portfolio-grid { grid-template-columns: 1fr; }
-            .contact-content { grid-template-columns: 1fr; }
+            .contact-content,
+            .graph-layout {
+                grid-template-columns: 1fr;
+            }
+            .graph-stage,
+            .graph-stage .canvas-container {
+                min-height: 420px;
+                height: 420px;
+            }
             section { padding: 3rem 1.5rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
-    <nav>
-        <div class="logo" onclick="scrollToTop()">NEXUS</div>
-        <ul>
+    <nav aria-label="Primary navigation">
+        <div class="logo" role="button" tabindex="0" onclick="scrollToTop()" onkeydown="handleLogoKey(event)">NEXUS</div>
+        <button class="menu-toggle" type="button" aria-label="Toggle navigation" aria-expanded="false" aria-controls="navMenu" onclick="toggleMenu()">
+            <span></span>
+        </button>
+        <ul class="nav-menu" id="navMenu">
             <li><a href="#hero">Studio</a></li>
             <li><a href="#work">Work</a></li>
             <li><a href="#about">About</a></li>
@@ -436,11 +844,11 @@
             <li><a href="#services">Services</a></li>
             <li><a href="#contact">Contact</a></li>
             <li>
-                <div class="color-switcher">
-                    <div class="color-dot" style="background: #00d9ff;" onclick="changeTheme('cyan')"></div>
-                    <div class="color-dot" style="background: #ff006e;" onclick="changeTheme('pink')"></div>
-                    <div class="color-dot" style="background: #00ff88;" onclick="changeTheme('lime')"></div>
-                    <div class="color-dot" style="background: #ff00ff;" onclick="changeTheme('magenta')"></div>
+                <div class="color-switcher" aria-label="Theme selector">
+                    <button class="color-dot" type="button" data-theme="cyan" aria-label="Use cyan theme" style="color: #00d9ff;" onclick="changeTheme('cyan')"></button>
+                    <button class="color-dot" type="button" data-theme="pink" aria-label="Use pink theme" style="color: #ff006e;" onclick="changeTheme('pink')"></button>
+                    <button class="color-dot" type="button" data-theme="lime" aria-label="Use lime theme" style="color: #00ff88;" onclick="changeTheme('lime')"></button>
+                    <button class="color-dot" type="button" data-theme="magenta" aria-label="Use magenta theme" style="color: #ff00ff;" onclick="changeTheme('magenta')"></button>
                 </div>
             </li>
         </ul>
@@ -453,7 +861,15 @@
                 <h1>Generative <span class="accent">Design</span> Studio</h1>
                 <p>We architect immersive digital experiences through algorithmic thinking, generative systems, and computational aesthetics. Each project is a dialogue between human creativity and machine intelligence.</p>
                 <p style="font-size: 0.95rem; color: var(--text-muted);">Est. 2010 | Based in Digital Realm</p>
-                <button class="cta-button" onclick="document.getElementById('work').scrollIntoView({behavior:'smooth'})">Explore Work</button>
+                <div class="hero-actions">
+                    <button class="cta-button" onclick="document.getElementById('work').scrollIntoView({behavior:'smooth'})">Explore Work</button>
+                    <button class="ghost-button" onclick="document.getElementById('graph').scrollIntoView({behavior:'smooth'})">Open Intelligence Map</button>
+                </div>
+                <div class="signal-strip" aria-label="Studio highlights">
+                    <div class="signal-pill"><strong>42K</strong><span>Generated frames daily</span></div>
+                    <div class="signal-pill"><strong>18</strong><span>Live installation systems</span></div>
+                    <div class="signal-pill"><strong>7</strong><span>Creative AI pipelines</span></div>
+                </div>
             </div>
             <div class="canvas-container">
                 <canvas id="heroCanvas"></canvas>
@@ -466,63 +882,75 @@
                 <h2>Algorithmic <span class="accent">Expressions</span></h2>
                 <p style="margin-bottom: 3rem;">Generative art systems exploring the boundaries between mathematics and aesthetics.</p>
                 <div class="portfolio-grid">
-                    <div class="portfolio-item">
+                    <div class="portfolio-item spotlight-card" role="button" tabindex="0" data-project="fluid">
                         <div class="portfolio-preview">
                             <canvas id="fluidDynamics"></canvas>
                         </div>
                         <div class="portfolio-info">
                             <h3>Fluid Dynamics</h3>
                             <p>Organic flow fields simulating liquid behavior.</p>
+                            <div class="portfolio-tags"><span>Realtime</span><span>Flow fields</span></div>
+                            <span class="card-action">View process -></span>
                         </div>
                     </div>
 
-                    <div class="portfolio-item">
+                    <div class="portfolio-item spotlight-card" role="button" tabindex="0" data-project="fractal">
                         <div class="portfolio-preview">
                             <canvas id="fractalMandala"></canvas>
                         </div>
                         <div class="portfolio-info">
                             <h3>Fractal Mandalas</h3>
                             <p>Recursive geometric patterns.</p>
+                            <div class="portfolio-tags"><span>Symmetry</span><span>Recursive</span></div>
+                            <span class="card-action">View process -></span>
                         </div>
                     </div>
 
-                    <div class="portfolio-item">
+                    <div class="portfolio-item spotlight-card" role="button" tabindex="0" data-project="voronoi">
                         <div class="portfolio-preview">
                             <canvas id="voronoiPattern"></canvas>
                         </div>
                         <div class="portfolio-info">
                             <h3>Voronoi Evolution</h3>
                             <p>Spatial tessellation patterns.</p>
+                            <div class="portfolio-tags"><span>Geometry</span><span>Agents</span></div>
+                            <span class="card-action">View process -></span>
                         </div>
                     </div>
 
-                    <div class="portfolio-item">
+                    <div class="portfolio-item spotlight-card" role="button" tabindex="0" data-project="wave">
                         <div class="portfolio-preview">
                             <canvas id="waveInterference"></canvas>
                         </div>
                         <div class="portfolio-info">
                             <h3>Wave Interference</h3>
                             <p>Superimposed oscillations.</p>
+                            <div class="portfolio-tags"><span>Signal</span><span>Audio reactive</span></div>
+                            <span class="card-action">View process -></span>
                         </div>
                     </div>
 
-                    <div class="portfolio-item">
+                    <div class="portfolio-item spotlight-card" role="button" tabindex="0" data-project="perlin">
                         <div class="portfolio-preview">
                             <canvas id="perlinLandscape"></canvas>
                         </div>
                         <div class="portfolio-info">
                             <h3>Perlin Landscape</h3>
                             <p>Procedural terrain generation.</p>
+                            <div class="portfolio-tags"><span>Terrain</span><span>Noise</span></div>
+                            <span class="card-action">View process -></span>
                         </div>
                     </div>
 
-                    <div class="portfolio-item">
+                    <div class="portfolio-item spotlight-card" role="button" tabindex="0" data-project="swarm">
                         <div class="portfolio-preview">
                             <canvas id="particleSwarm"></canvas>
                         </div>
                         <div class="portfolio-info">
                             <h3>Particle Swarms</h3>
                             <p>Autonomous agent systems.</p>
+                            <div class="portfolio-tags"><span>Flocking</span><span>Behavior</span></div>
+                            <span class="card-action">View process -></span>
                         </div>
                     </div>
                 </div>
@@ -542,6 +970,43 @@
         </section>
 
         <!-- Knowledge Graph Section -->
+        <section id="graph">
+            <div class="container">
+                <div class="section-kicker">Nexus Intelligence Layer</div>
+                <h2>Creative Systems <span class="accent">Knowledge Graph</span></h2>
+                <p>Explore how NEXUS connects strategy, data, code, and embodied experience into production-ready generative systems. Select a node to reveal the design logic behind each capability.</p>
+                <div class="graph-layout">
+                    <div class="graph-stage">
+                        <div class="graph-hud" aria-hidden="true">
+                            <span class="graph-chip">Drag the map</span>
+                            <span class="graph-chip">Click a node</span>
+                            <span class="graph-chip">Live signals</span>
+                        </div>
+                        <div class="canvas-container">
+                            <canvas id="graphCanvas" aria-label="Interactive knowledge graph visualization"></canvas>
+                        </div>
+                    </div>
+                    <aside class="graph-panel" aria-live="polite">
+                        <div class="node-eyebrow" id="nodeEyebrow">Selected Node</div>
+                        <h3 id="nodeTitle">Generative Core</h3>
+                        <p id="nodeDescription">A central orchestration layer linking visual systems, real-time data, audience input, and installation hardware into one adaptive creative pipeline.</p>
+                        <div class="graph-metrics">
+                            <div class="metric"><strong id="nodeSignal">98%</strong><span>Signal clarity</span></div>
+                            <div class="metric"><strong id="nodeDepth">12</strong><span>Connected systems</span></div>
+                        </div>
+                        <div class="modal-tags" id="nodeTags">
+                            <span>Systems</span><span>Canvas</span><span>AI assist</span>
+                        </div>
+                        <div class="graph-controls" aria-label="Knowledge graph controls">
+                            <button class="ghost-button active" type="button" data-focus-node="core">Core</button>
+                            <button class="ghost-button" type="button" data-focus-node="data">Data</button>
+                            <button class="ghost-button" type="button" data-focus-node="install">Installations</button>
+                            <button class="ghost-button" type="button" data-focus-node="brand">Brand Worlds</button>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
 
         <!-- Services Section -->
         <section id="services">
@@ -595,8 +1060,34 @@
                             <p>We're always interested in collaborations exploring generative design.</p>
                         </div>
                     </div>
-                    <div class="canvas-container">
-                        <canvas id="contactCanvas"></canvas>
+                    <div>
+                        <form class="brief-form" id="briefForm">
+                            <h3>Project Brief Generator</h3>
+                            <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">Shape a fast signal for the kind of collaboration you want to start.</p>
+                            <label for="projectType">Project Type</label>
+                            <select id="projectType" name="projectType">
+                                <option value="interactive installation">Interactive installation</option>
+                                <option value="brand system">Generative brand system</option>
+                                <option value="data visualization">Data visualization</option>
+                                <option value="web experience">Web experience</option>
+                            </select>
+                            <label for="projectMood">Creative Mood</label>
+                            <select id="projectMood" name="projectMood">
+                                <option value="ethereal and immersive">Ethereal and immersive</option>
+                                <option value="bold and kinetic">Bold and kinetic</option>
+                                <option value="minimal and precise">Minimal and precise</option>
+                                <option value="chaotic and alive">Chaotic and alive</option>
+                            </select>
+                            <label for="projectInput">Source Signal</label>
+                            <input id="projectInput" name="projectInput" type="text" value="audience movement" placeholder="audio, weather, motion, sales data...">
+                            <label for="projectNotes">Notes</label>
+                            <textarea id="projectNotes" name="projectNotes" placeholder="Tell us about audience, venue, platform, or constraints."></textarea>
+                            <div class="brief-output" id="briefOutput"><strong>Generated brief:</strong> An ethereal and immersive interactive installation driven by audience movement.</div>
+                            <button class="cta-button" type="button" onclick="copyBrief()">Copy Brief</button>
+                        </form>
+                        <div class="canvas-container" style="margin-top: 2rem;">
+                            <canvas id="contactCanvas"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -607,6 +1098,21 @@
         <p>NEXUS GENERATIVE DESIGN STUDIO © 2026 | WHERE ALGORITHMS BECOME ART</p>
     </footer>
 
+    <div class="modal" id="projectModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card">
+            <button class="modal-close" type="button" aria-label="Close project details" onclick="closeProjectModal()">&times;</button>
+            <div class="node-eyebrow" id="modalEyebrow">Case Signal</div>
+            <h2 id="modalTitle">Project Title</h2>
+            <p id="modalDescription">Project details.</p>
+            <div class="modal-stat-grid">
+                <div class="metric"><strong id="modalMetricOne">0</strong><span>Iterations</span></div>
+                <div class="metric"><strong id="modalMetricTwo">0</strong><span>Inputs</span></div>
+                <div class="metric"><strong id="modalMetricThree">0</strong><span>FPS target</span></div>
+            </div>
+            <div class="modal-tags" id="modalTags"></div>
+        </div>
+    </div>
+
     <script>
         // ============= THEME SYSTEM =============
         const themes = {
@@ -615,17 +1121,62 @@
             lime: { primary: '#00ff88', secondary: '#00d9ff', tertiary: '#ff006e', accent: '#ff00ff' },
             magenta: { primary: '#ff00ff', secondary: '#00ff88', tertiary: '#00d9ff', accent: '#ff006e' }
         };
+        const themeStorageKey = 'nexus-theme';
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         function changeTheme(theme) {
             const t = themes[theme];
+            if (!t) return;
             document.documentElement.style.setProperty('--primary', t.primary);
             document.documentElement.style.setProperty('--secondary', t.secondary);
             document.documentElement.style.setProperty('--tertiary', t.tertiary);
             document.documentElement.style.setProperty('--accent', t.accent);
+            document.querySelectorAll('.color-dot').forEach(dot => {
+                dot.classList.toggle('active', dot.dataset.theme === theme);
+                dot.setAttribute('aria-pressed', String(dot.dataset.theme === theme));
+            });
+            try {
+                localStorage.setItem(themeStorageKey, theme);
+            } catch (error) {
+                // Theme persistence is optional when storage is unavailable.
+            }
         }
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleLogoKey(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                scrollToTop();
+            }
+        }
+
+        function toggleMenu() {
+            const nav = document.querySelector('nav');
+            const toggle = document.querySelector('.menu-toggle');
+            const isOpen = nav.classList.toggle('menu-open');
+            toggle.setAttribute('aria-expanded', String(isOpen));
+        }
+
+        function closeMenu() {
+            const nav = document.querySelector('nav');
+            const toggle = document.querySelector('.menu-toggle');
+            nav.classList.remove('menu-open');
+            toggle.setAttribute('aria-expanded', 'false');
+        }
+
+        function nextFrame(callback) {
+            if (!reducedMotion) {
+                requestAnimationFrame(callback);
+            }
+        }
+
+        try {
+            changeTheme(localStorage.getItem(themeStorageKey) || 'cyan');
+        } catch (error) {
+            changeTheme('cyan');
         }
 
         // ============= COLOR PALETTES =============
@@ -639,6 +1190,109 @@
             teal: '#1abc9c',
             gold: '#f39c12'
         };
+
+        // ============= INTERACTIVE UI LAYER =============
+        const projectDetails = {
+            fluid: {
+                eyebrow: 'Fluid Simulation',
+                title: 'Fluid Dynamics',
+                description: 'A kinetic field study using vector flow, particle decay, and color drift to create organic motion for stage backdrops and launch experiences.',
+                metrics: ['1.2M', '4 feeds', '60'],
+                tags: ['Canvas', 'Vector fields', 'Realtime direction']
+            },
+            fractal: {
+                eyebrow: 'Recursive Geometry',
+                title: 'Fractal Mandalas',
+                description: 'Symmetry engines generate infinite mandala variants for print, projection, and interactive identity systems.',
+                metrics: ['8x', '12 seeds', '60'],
+                tags: ['Recursion', 'Parametric systems', 'Pattern library']
+            },
+            voronoi: {
+                eyebrow: 'Spatial Intelligence',
+                title: 'Voronoi Evolution',
+                description: 'Moving sites form adaptive territories, useful for visualizing crowd zones, logistics systems, and living brand grids.',
+                metrics: ['15 nodes', '3 modes', '45'],
+                tags: ['Tessellation', 'Agents', 'Simulation']
+            },
+            wave: {
+                eyebrow: 'Signal Design',
+                title: 'Wave Interference',
+                description: 'Layered oscillators convert audio, rhythm, and sensor signals into luminous interference patterns.',
+                metrics: ['2 waves', '360 hue', '60'],
+                tags: ['Audio reactive', 'Shaders', 'Live visuals']
+            },
+            perlin: {
+                eyebrow: 'Procedural Worlds',
+                title: 'Perlin Landscape',
+                description: 'Noise fields produce evolving terrains for immersive web canvases, exhibition portals, and generative maps.',
+                metrics: ['3 octaves', 'Unlimited', '50'],
+                tags: ['Noise', 'Terrain', 'World building']
+            },
+            swarm: {
+                eyebrow: 'Behavior Systems',
+                title: 'Particle Swarms',
+                description: 'Autonomous agents reveal emergent behavior for ambient visuals, product explainers, and living data portraits.',
+                metrics: ['100 agents', '4 rules', '60'],
+                tags: ['Flocking', 'Emergence', 'Network art']
+            }
+        };
+
+        function renderTags(container, tags) {
+            container.innerHTML = '';
+            tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.textContent = tag;
+                container.appendChild(span);
+            });
+        }
+
+        function openProjectModal(projectKey) {
+            const project = projectDetails[projectKey];
+            if (!project) return;
+            document.getElementById('modalEyebrow').textContent = project.eyebrow;
+            document.getElementById('modalTitle').textContent = project.title;
+            document.getElementById('modalDescription').textContent = project.description;
+            document.getElementById('modalMetricOne').textContent = project.metrics[0];
+            document.getElementById('modalMetricTwo').textContent = project.metrics[1];
+            document.getElementById('modalMetricThree').textContent = project.metrics[2];
+            renderTags(document.getElementById('modalTags'), project.tags);
+            document.getElementById('projectModal').classList.add('open');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('open');
+        }
+
+        document.querySelectorAll('.portfolio-item').forEach(card => {
+            card.addEventListener('click', () => openProjectModal(card.dataset.project));
+            card.addEventListener('keydown', event => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openProjectModal(card.dataset.project);
+                }
+            });
+        });
+
+        document.querySelectorAll('.spotlight-card').forEach(card => {
+            card.addEventListener('mousemove', event => {
+                const rect = card.getBoundingClientRect();
+                card.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
+                card.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
+            });
+        });
+
+        document.getElementById('projectModal').addEventListener('click', event => {
+            if (event.target.id === 'projectModal') {
+                closeProjectModal();
+            }
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeProjectModal();
+                closeMenu();
+            }
+        });
 
         // ============= HERO CANVAS =============
         const heroCanvas = document.getElementById('heroCanvas');
@@ -668,7 +1322,7 @@
 
             heroCtx.globalAlpha = 1;
             heroTime++;
-            requestAnimationFrame(drawHero);
+            nextFrame(drawHero);
         }
         drawHero();
 
@@ -703,7 +1357,7 @@
 
             fluidCtx.globalAlpha = 1;
             fluidTime++;
-            requestAnimationFrame(drawFluid);
+            nextFrame(drawFluid);
         }
         drawFluid();
 
@@ -743,7 +1397,7 @@
 
             fractalCtx.globalAlpha = 1;
             fractalTime++;
-            requestAnimationFrame(drawFractal);
+            nextFrame(drawFractal);
         }
         drawFractal();
 
@@ -801,7 +1455,7 @@
 
             voronoiCtx.globalAlpha = 1;
             voronoiTime++;
-            requestAnimationFrame(drawVoronoi);
+            nextFrame(drawVoronoi);
         }
         drawVoronoi();
 
@@ -832,7 +1486,7 @@
 
             waveCtx.globalAlpha = 1;
             waveTime++;
-            requestAnimationFrame(drawWave);
+            nextFrame(drawWave);
         }
         drawWave();
 
@@ -867,7 +1521,7 @@
 
             noiseCtx.globalAlpha = 1;
             noiseTime++;
-            requestAnimationFrame(drawNoise);
+            nextFrame(drawNoise);
         }
         drawNoise();
 
@@ -926,7 +1580,7 @@
 
             swarmCtx.globalAlpha = 1;
             swarmTime++;
-            requestAnimationFrame(drawSwarm);
+            nextFrame(drawSwarm);
         }
         drawSwarm();
 
@@ -969,9 +1623,155 @@
             }
 
             aboutTime++;
-            requestAnimationFrame(drawAbout);
+            nextFrame(drawAbout);
         }
         drawAbout();
+
+        // ============= KNOWLEDGE GRAPH CANVAS =============
+        const graphCanvas = document.getElementById('graphCanvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        graphCanvas.width = graphCanvas.offsetWidth;
+        graphCanvas.height = graphCanvas.offsetHeight;
+
+        const graphNodes = [
+            { id: 'core', label: 'Generative Core', x: 0.5, y: 0.5, radius: 28, color: 'cyan', signal: '98%', depth: '12', tags: ['Systems', 'Canvas', 'AI assist'], description: 'A central orchestration layer linking visual systems, real-time data, audience input, and installation hardware into one adaptive creative pipeline.' },
+            { id: 'data', label: 'Data Streams', x: 0.25, y: 0.28, radius: 22, color: 'lime', signal: '86%', depth: '9', tags: ['APIs', 'Sensors', 'Telemetry'], description: 'Live inputs from audio, motion, weather, audience behavior, and business metrics become expressive design material.' },
+            { id: 'install', label: 'Installations', x: 0.72, y: 0.25, radius: 24, color: 'magenta', signal: '91%', depth: '7', tags: ['Projection', 'Spatial UX', 'Hardware'], description: 'Gallery, retail, and stage environments that react to bodies in space while staying resilient under show conditions.' },
+            { id: 'brand', label: 'Brand Worlds', x: 0.78, y: 0.68, radius: 22, color: 'pink', signal: '89%', depth: '8', tags: ['Identity', 'Motion', 'Toolkits'], description: 'Generative identity systems with flexible rules, motion behaviors, and exportable assets for teams.' },
+            { id: 'web', label: 'WebGL Portals', x: 0.34, y: 0.74, radius: 20, color: 'teal', signal: '94%', depth: '6', tags: ['Web', 'Performance', 'Interaction'], description: 'High-performance browser experiences that turn product stories and datasets into playable interfaces.' },
+            { id: 'strategy', label: 'Creative Strategy', x: 0.48, y: 0.18, radius: 18, color: 'gold', signal: '93%', depth: '5', tags: ['Workshops', 'Roadmaps', 'Prototypes'], description: 'Discovery sprints translate fuzzy ambition into technical prototypes, creative constraints, and production roadmaps.' }
+        ];
+
+        const graphLinks = [
+            ['core', 'data'], ['core', 'install'], ['core', 'brand'], ['core', 'web'], ['core', 'strategy'],
+            ['data', 'web'], ['data', 'install'], ['strategy', 'brand'], ['install', 'brand'], ['web', 'brand']
+        ];
+        let selectedGraphNode = graphNodes[0];
+        let graphTime = 0;
+        let graphOffset = { x: 0, y: 0 };
+        let graphDrag = null;
+
+        function graphPosition(node) {
+            return {
+                x: node.x * graphCanvas.width + graphOffset.x,
+                y: node.y * graphCanvas.height + graphOffset.y
+            };
+        }
+
+        function updateGraphPanel(node) {
+            selectedGraphNode = node;
+            document.getElementById('nodeEyebrow').textContent = `Signal ${node.id.toUpperCase()}`;
+            document.getElementById('nodeTitle').textContent = node.label;
+            document.getElementById('nodeDescription').textContent = node.description;
+            document.getElementById('nodeSignal').textContent = node.signal;
+            document.getElementById('nodeDepth').textContent = node.depth;
+            renderTags(document.getElementById('nodeTags'), node.tags);
+            document.querySelectorAll('[data-focus-node]').forEach(button => {
+                button.classList.toggle('active', button.dataset.focusNode === node.id);
+            });
+        }
+
+        function drawGraph() {
+            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            graphCtx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+            graphCtx.fillRect(0, 0, graphCanvas.width, graphCanvas.height);
+
+            for (let x = 0; x < graphCanvas.width; x += 42) {
+                graphCtx.strokeStyle = 'rgba(0, 217, 255, 0.05)';
+                graphCtx.lineWidth = 1;
+                graphCtx.beginPath();
+                graphCtx.moveTo(x + (graphOffset.x % 42), 0);
+                graphCtx.lineTo(x + (graphOffset.x % 42), graphCanvas.height);
+                graphCtx.stroke();
+            }
+
+            graphLinks.forEach(([fromId, toId]) => {
+                const from = graphNodes.find(node => node.id === fromId);
+                const to = graphNodes.find(node => node.id === toId);
+                const a = graphPosition(from);
+                const b = graphPosition(to);
+                const pulse = (Math.sin(graphTime * 0.035 + a.x * 0.01) + 1) / 2;
+                graphCtx.strokeStyle = `rgba(0, 217, 255, ${0.16 + pulse * 0.24})`;
+                graphCtx.lineWidth = selectedGraphNode.id === from.id || selectedGraphNode.id === to.id ? 2 : 1;
+                graphCtx.beginPath();
+                graphCtx.moveTo(a.x, a.y);
+                graphCtx.lineTo(b.x, b.y);
+                graphCtx.stroke();
+            });
+
+            graphNodes.forEach(node => {
+                const pos = graphPosition(node);
+                const color = colors[node.color] || colors.cyan;
+                const isSelected = node.id === selectedGraphNode.id;
+                const radius = node.radius + Math.sin(graphTime * 0.04 + node.radius) * 2;
+                graphCtx.globalAlpha = 0.16;
+                graphCtx.fillStyle = color;
+                graphCtx.beginPath();
+                graphCtx.arc(pos.x, pos.y, radius * 2.5, 0, Math.PI * 2);
+                graphCtx.fill();
+
+                graphCtx.globalAlpha = 1;
+                graphCtx.strokeStyle = color;
+                graphCtx.lineWidth = isSelected ? 3 : 1.5;
+                graphCtx.fillStyle = 'rgba(0, 0, 0, 0.82)';
+                graphCtx.beginPath();
+                graphCtx.arc(pos.x, pos.y, radius, 0, Math.PI * 2);
+                graphCtx.fill();
+                graphCtx.stroke();
+
+                graphCtx.fillStyle = color;
+                graphCtx.font = '600 12px IBM Plex Mono';
+                graphCtx.textAlign = 'center';
+                graphCtx.fillText(node.label, pos.x, pos.y + radius + 20);
+            });
+
+            graphCtx.globalAlpha = 1;
+            graphTime++;
+            nextFrame(drawGraph);
+        }
+
+        function nearestGraphNode(event) {
+            const rect = graphCanvas.getBoundingClientRect();
+            const pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+            return graphNodes.reduce((nearest, node) => {
+                const pos = graphPosition(node);
+                const distance = Math.hypot(pointer.x - pos.x, pointer.y - pos.y);
+                return distance < nearest.distance ? { node, distance } : nearest;
+            }, { node: null, distance: Infinity });
+        }
+
+        graphCanvas.addEventListener('pointerdown', event => {
+            graphCanvas.setPointerCapture(event.pointerId);
+            graphDrag = { x: event.clientX, y: event.clientY, offsetX: graphOffset.x, offsetY: graphOffset.y, moved: false };
+        });
+
+        graphCanvas.addEventListener('pointermove', event => {
+            if (!graphDrag) return;
+            const dx = event.clientX - graphDrag.x;
+            const dy = event.clientY - graphDrag.y;
+            graphDrag.moved = graphDrag.moved || Math.abs(dx) + Math.abs(dy) > 4;
+            graphOffset = { x: graphDrag.offsetX + dx, y: graphDrag.offsetY + dy };
+        });
+
+        graphCanvas.addEventListener('pointerup', event => {
+            if (!graphDrag || !graphDrag.moved) {
+                const nearest = nearestGraphNode(event);
+                if (nearest.node && nearest.distance < nearest.node.radius + 18) {
+                    updateGraphPanel(nearest.node);
+                }
+            }
+            graphDrag = null;
+        });
+
+        document.querySelectorAll('[data-focus-node]').forEach(button => {
+            button.addEventListener('click', () => {
+                const node = graphNodes.find(item => item.id === button.dataset.focusNode);
+                if (node) updateGraphPanel(node);
+            });
+        });
+
+        updateGraphPanel(selectedGraphNode);
+        drawGraph();
 
         // ============= CONTACT CANVAS =============
         const contactCanvas = document.getElementById('contactCanvas');
@@ -1033,7 +1833,7 @@
 
             contactCtx.globalAlpha = 1;
             contactTime++;
-            requestAnimationFrame(drawContact);
+            nextFrame(drawContact);
         }
         drawContact();
 
@@ -1044,8 +1844,58 @@
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    closeMenu();
                 }
             });
+        });
+
+        // ============= PROJECT BRIEF BUILDER =============
+        const briefForm = document.getElementById('briefForm');
+        const briefOutput = document.getElementById('briefOutput');
+
+        function buildBrief() {
+            const type = document.getElementById('projectType').value;
+            const mood = document.getElementById('projectMood').value;
+            const input = document.getElementById('projectInput').value.trim() || 'a live data signal';
+            const notes = document.getElementById('projectNotes').value.trim();
+            const noteText = notes ? ` Additional context: ${notes}` : '';
+            return `A ${mood} ${type} driven by ${input}.${noteText}`;
+        }
+
+        function updateBrief() {
+            briefOutput.innerHTML = '<strong>Generated brief:</strong> ';
+            briefOutput.append(document.createTextNode(buildBrief()));
+        }
+
+        function copyBrief() {
+            const brief = buildBrief();
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(brief);
+            }
+            briefOutput.innerHTML = '<strong>Copied brief:</strong> ';
+            briefOutput.append(document.createTextNode(brief));
+        }
+
+        briefForm.addEventListener('input', updateBrief);
+        briefForm.addEventListener('change', updateBrief);
+        updateBrief();
+
+        function sizeCanvas(canvas, height) {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = height || canvas.offsetHeight;
+        }
+
+        window.addEventListener('resize', () => {
+            sizeCanvas(heroCanvas);
+            sizeCanvas(fluidCanvas, 280);
+            sizeCanvas(fractalCanvas, 280);
+            sizeCanvas(voronoiCanvas, 280);
+            sizeCanvas(waveCanvas, 280);
+            sizeCanvas(noiseCanvas, 280);
+            sizeCanvas(swarmCanvas, 280);
+            sizeCanvas(aboutCanvas);
+            sizeCanvas(graphCanvas);
+            sizeCanvas(contactCanvas);
         });
     </script>
 </body>
